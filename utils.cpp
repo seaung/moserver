@@ -166,3 +166,176 @@ void StrTrimR(char *str, const char chr)
 		istrlen--;
 	}
 }
+
+bool MKdir(const char *filename, bool bisfile)
+{
+	char spath[301];
+	int ilen = strlen(filename);
+
+	for (int i = 1; i < ilen; i++)
+	{
+		if (filename[i] != '/')
+		{
+			continue;
+		}
+
+		StrNCopy(spath, sizeof(spath), filename, i);
+		if (access(spath, F_OK) == 0)
+		{
+			continue;
+		}
+
+		if (mkdir(spath, 0755) != 0)
+		{
+			return false;
+		}
+	}
+
+	if (bisfile == false)
+	{
+		if (access(filename, F_OK) != 0)
+		{
+			if (mkdir(filename, 0755) != 0)
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+FILE *FOpen(const char *filename, const char *mode)
+{
+	if (MKdir(filename) == false)
+	{
+		return 0;
+	}
+
+	return fopen(filename, mode);
+}
+
+void time2str(const time_t ltime, char *stime, const char *fmt)
+{
+	if (stime == 0)
+	{
+		return;
+	}
+
+	strcpy(stime, "");
+
+	struct tm sttm = *localtime(&ltime);
+
+	sttm.tm_year = sttm.tm_year + 1900;
+	sttm.tm_mon++;
+
+	if (fmt == 0)
+	{
+		snprintf(stime, 20, "%04u-%02u-%02u %02u:%02u:%02u", sttm.tm_year, 
+				sttm.tm_mon, sttm.tm_mday, sttm.tm_hour, sttm.tm_min, sttm.tm_sec);
+		return;
+	}
+
+	if (strcmp(fmt, "yyyy-mm-dd hh24:mi:ss") == 0)
+	{
+		snprintf(stime, 20, "%04u-%02u-%02u %02u:%02u:%02u", sttm.tm_year, 
+				sttm.tm_mon, sttm.tm_mday, sttm.tm_hour, sttm.tm_min, sttm.tm_sec);
+		return;
+	}
+
+	if (strcmp(fmt, "yyyy-mm-dd hh24:mi") == 0)
+	{
+		snprintf(stime, 20, "%04u-%02u-%02u %02u:%02u", sttm.tm_year, 
+				sttm.tm_mon, sttm.tm_mday, sttm.tm_hour, sttm.tm_min);
+		return;
+	}
+
+	if (strcmp(fmt, "yyyy-mm-dd hh24") == 0)
+	{
+		snprintf(stime, 20, "%04u-%02u-%02u %02u", sttm.tm_year, 
+				sttm.tm_mon, sttm.tm_mday, sttm.tm_hour);
+		return;
+	}
+
+	if (strcmp(fmt, "yyyy-mm-dd") == 0)
+	{
+		snprintf(stime, 20, "%04u-%02u-%02u", sttm.tm_year, 
+				sttm.tm_mon, sttm.tm_mday);
+		return;
+	}
+
+	if (strcmp(fmt, "yyyy-mm") == 0)
+	{
+		snprintf(stime, 20, "%04u-%02u", sttm.tm_year, 
+				sttm.tm_mon);
+		return;
+	}
+
+	if (strcmp(fmt, "yyyymmddhh24miss") == 0)
+	{
+		snprintf(stime, 20, "%04u%02u%02u %02u%02u%02u", sttm.tm_year, 
+				sttm.tm_mon, sttm.tm_mday, sttm.tm_hour, sttm.tm_min, sttm.tm_sec);
+		return;
+	}
+
+	if (strcmp(fmt, "yyyymmddhh24mi") == 0)
+	{
+		snprintf(stime, 20, "%04u%02u%02u %02u%02u", sttm.tm_year, 
+				sttm.tm_mon, sttm.tm_mday, sttm.tm_hour, sttm.tm_min);
+		return;
+	}
+
+	if (strcmp(fmt, "yyyymmddhh24") == 0)
+	{
+		snprintf(stime, 20, "%04u%02u%02u %02u", sttm.tm_year, 
+				sttm.tm_mon, sttm.tm_mday, sttm.tm_hour);
+		return;
+	}
+
+	if (strcmp(fmt, "yyyymmdd") == 0)
+	{
+		snprintf(stime, 20, "%04u%02u%02u", sttm.tm_year, 
+				sttm.tm_mon, sttm.tm_mday);
+		return;
+	}
+}
+
+void str2time(const char *stime)
+{}
+
+void LocalTime(char *stime, const char *fmt, const int timeval)
+{
+	if (stime == 0)
+	{
+		return;
+	}
+
+	time_t timer;
+
+	time(&timer);
+	timer = timer + timeval;
+	time2str(timer, stime, fmt);
+}
+
+int SNPrintf(char *dest, const size_t destlen, size_t n, const char *fmt, ...)
+{
+	if (dest == 0)
+	{
+		return -1;
+	}
+
+	memset(dest, 0, destlen);
+	int ilen = n;
+	if (n < destlen)
+	{
+		ilen = destlen;
+	}
+
+	va_list ap;
+
+	va_start(ap, fmt);
+	int iret = vsnprintf(dest, ilen, fmt, ap);
+	va_end(ap);
+
+	return iret;
+}
