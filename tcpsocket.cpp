@@ -289,14 +289,51 @@ char *TCPServer::GetClientIP()
 	return (inet_ntoa(m_cliaddr.sin_addr));
 }
 
-bool TCPServer::TCPRead(char *buffer, const int itimeout)
+bool TCPServer::TCPReadBuffer(char *buffer, const int itimeout)
 {
-	return true;
+	if (m_clientfd == -1)
+	{
+		return false;
+	}
+
+	if (itimeout > 0)
+	{
+		struct pollfd pfd;
+		pfd.fd = m_clientfd;
+		pfd.events = POLLIN;
+		m_btimeout = false;
+		int iret;
+
+		if ((iret = poll(&pfd, 1, itimeout * 1000)) <= 0)
+		{
+			if (iret == 0)
+			{
+				m_btimeout = true;
+				return false;
+			}
+		}
+	}
+
+	m_ibuffer_len = 0;
+
+	return (TCPRead(m_clientfd, buffer, &m_ibuffer_len));
 }
 
-bool TCPServer::TCPWrite(const char *buffer, const int ibuffer_len)
+bool TCPServer::TCPWriteBuffer(const char *buffer, const int ibuffer_len)
 {
-	return true;
+	if (m_clientfd == -1)
+	{
+		return false;
+	}
+
+	int ilen = ibuffer_len;
+
+	if (ilen == 0)
+	{
+		ilen = strlen(buffer);
+	}
+
+	return (TCPWrite(m_clientfd, buffer, ilen));
 }
 
 void TCPServer::CloseServerSocket()

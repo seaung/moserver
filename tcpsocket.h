@@ -6,7 +6,7 @@ bool TCPWrite(const int sockfd, const char * buffer, const int ibuffer_len);
 
 bool TCPWriteN(const int sockfd, char *buffer, const size_t n);
 
-bool TCPRead(const int sockfd, char *buffer, int *ibuffer_len, const int itimeout);
+bool TCPRead(const int sockfd, char *buffer, int *ibuffer_len, const int itimeout = 0);
 
 bool TCPReadN(const int sockfd, char * buffer, const size_t n);
 
@@ -79,9 +79,9 @@ class TCPServer
 
 	char *GetClientIP();
 
-	bool TCPRead(char *buffer, const int itimeout = 0);
+	bool TCPReadBuffer(char *buffer, const int itimeout = 0);
 
-	bool TCPWrite(const char *buffer, const int ibuffer_len = 0);
+	bool TCPWriteBuffer(const char *buffer, const int ibuffer_len = 0);
 
 	void CloseServerSocket();
 
